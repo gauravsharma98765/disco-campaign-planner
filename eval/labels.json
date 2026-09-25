@@ -12,5 +12,6 @@
   "12": {"publishers": ["Tailcrate", "Pawline", "Ruffco"]},
   "13": {"publishers": ["Movewell", "Daily Form", "Studiogrid"]},
   "14": {"publishers": ["Northbed", "Hearthstone Goods", "Marlowe & Co."]},
-  "15": {"status": "needs_input"}
+  "15": {"status": "needs_input"},
+  "16": {"status": "ok", "clean_claims": true, "feasible": false}
 }

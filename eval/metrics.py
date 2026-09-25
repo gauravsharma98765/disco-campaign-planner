@@ -31,8 +31,13 @@ def main() -> None:
         if "status" in label:
             status_total += 1
             hit = r["status"] == label["status"]
+            if "clean_claims" in label:      # no unsupported offer/endorsement/proof/promise in the copy
+                hit = hit and not any(w["warning"].startswith("unsupported") for w in r.get("creative_warnings", []))
+            if "feasible" in label:          # the bid economics flag must agree
+                hit = hit and (r.get("config", {}).get("bid_strategy") or {}).get("feasible") == label["feasible"]
             status_ok += hit
-            print(f"#{n:>2}: status {r['status']:<12} expected {label['status']:<12} {'OK' if hit else 'MISS'}")
+            print(f"#{n:>2}: status {r['status']:<12} expected {label['status']:<12} {'OK' if hit else 'MISS'}"
+                  + (f"   warnings={[w['warning'] for w in r.get('creative_warnings', [])]}" if "clean_claims" in label else ""))
             continue
         if r["status"] != "ok":
             print(f"#{n:>2}: status {r['status']} but publishers were expected")
@@ -45,6 +50,8 @@ def main() -> None:
         p_fused = len(set(fused_top) & want) / 3
         rows.append((n, p_rerank, p_fused))
         print(f"#{n:>2}: P@3 reranked {p_rerank:.2f}  fusion-only {p_fused:.2f}   got {rerank_top}  want {sorted(want)}")
+    invented = sum(1 for r in results.values() for w in r.get("creative_warnings", []) if w["warning"].startswith("unsupported"))
+    print(f"\nunsupported-claim warnings across all examples: {invented}")
     if rows:
         print(f"\nmean P@3  reranked: {sum(r[1] for r in rows) / len(rows):.2f}   fusion-only: {sum(r[2] for r in rows) / len(rows):.2f}   (n={len(rows)})")
     if status_total:

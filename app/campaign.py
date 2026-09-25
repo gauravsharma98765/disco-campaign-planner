@@ -16,8 +16,8 @@ INCOME_CPM_USD = {"mid": 6.0, "mid-high": 9.0, "high": 13.0}
 CATEGORY_CPM_MULT = {"instant_delivery": 0.8, "pet": 0.9, "meal_kits": 0.9, "beverages": 0.9,
                      "groceries": 1.0, "apparel": 1.0, "wellness_services": 1.0,
                      "home": 1.1, "wellness_dtc": 1.1, "beauty": 1.2}
-ASSUMED_CTR = 0.004            # clicks per impression on retail-media text placements
-ASSUMED_CVR = 0.02             # orders per click
+ASSUMED_CTR = 0.008            # clicks per impression; retail-media placements sit near checkout, so higher than display
+ASSUMED_CVR = 0.03             # orders per click for a shopper already in a buying session
 TARGET_CPA_SHARE = 0.30        # spend at most 30% of first-order value to win a customer
 SUBSCRIPTION_LTV_MULT = 3.0    # a subscriber is worth ~3 first orders, so CPA can be higher
 FREQUENCY_CAP = {"impressions": 3, "per": "day"}
@@ -79,6 +79,27 @@ def objective(profile: AdvertiserProfile) -> str:
     return "conversions"
 
 
+def feasibility(strategy: dict, target_cpa: float, cpc: float, rows: list[dict]) -> dict:
+    """Reconcile the two sides of a bid: what a click costs (CPM over click rate) versus what a
+    click can be worth (target CPA times conversion rate). If cost exceeds worth, say so plainly
+    instead of suggesting bids the economics cannot support."""
+    max_cpc = round(target_cpa * ASSUMED_CVR, 2)
+    ratio = cpc / max_cpc                                  # >1 means a click costs more than it can be worth
+    needed_cvr = cpc / target_cpa                          # conversion rate that would make the target hold
+    strategy["max_affordable_cpc_usd"] = max_cpc
+    strategy["feasible"] = ratio <= 1
+    strategy["feasibility"] = "feasible" if ratio <= 1 else "marginal" if ratio <= 1.5 else "infeasible"
+    if ratio > 1:
+        strategy["feasibility_note"] = (
+            f"At {ASSUMED_CVR:.0%} conversion a ${target_cpa:.0f} target CPA affords clicks up to ${max_cpc:.2f}, "
+            f"but clicks on these publishers cost about ${cpc:.2f} ({ratio:.1f}x). Holding the target needs a "
+            f"{needed_cvr:.1%} conversion rate"
+            + (" or a modestly higher order value." if ratio <= 1.5 else
+               ", which is unrealistic: this product needs a higher order value, a subscription or bundle, or repeat "
+               "purchase behind it before paid placement pays back."))
+    return strategy
+
+
 def bid_strategy(profile: AdvertiserProfile, rows: list[dict]) -> dict:
     avg_cpm = sum(r["est_cpm_usd"] for r in rows) / len(rows)
     cpc = avg_cpm / (1000 * ASSUMED_CTR)
@@ -89,13 +110,15 @@ def bid_strategy(profile: AdvertiserProfile, rows: list[dict]) -> dict:
                 "rationale": "High-consideration purchase: pay for qualified reach on affluent publishers, then retarget visitors. Optimising to last-click CPA would starve the campaign."}
     if profile.business_model == "subscription":
         target = round(price * TARGET_CPA_SHARE * SUBSCRIPTION_LTV_MULT, 2)
-        return {"pricing_model": "CPA", "strategy": "target_cpa", "target_cpa_usd": target,
+        return feasibility({"pricing_model": "CPA", "strategy": "target_cpa", "target_cpa_usd": target,
                 "starting_bid": {"low": round(cpc * 0.8, 2), "high": round(cpc * 1.3, 2), "unit": "USD per click (until CPA data accrues)"},
-                "rationale": f"Recurring revenue: a subscriber is worth ~{SUBSCRIPTION_LTV_MULT:.0f}x the first ${price:.0f} order, so up to ${target:.0f} per acquisition is sustainable. Start on CPC bids while the system learns."}
+                "rationale": f"Recurring revenue: a subscriber is assumed worth ~{SUBSCRIPTION_LTV_MULT:.0f}x the first ${price:.0f} order, which sets the ${target:.0f} target CPA. Start on CPC bids while the system learns."},
+                target, cpc, rows)
     target = round(price * TARGET_CPA_SHARE, 2)
-    return {"pricing_model": "CPC", "strategy": "max_conversions_with_cpa_guardrail", "target_cpa_usd": target,
+    return feasibility({"pricing_model": "CPC", "strategy": "max_conversions_with_cpa_guardrail", "target_cpa_usd": target,
             "starting_bid": {"low": round(cpc * 0.8, 2), "high": round(cpc * 1.2, 2), "unit": "USD per click"},
-            "rationale": f"One-time purchase around ${price:.0f}: bid per click, cap acquisition cost at {TARGET_CPA_SHARE:.0%} of order value (${target:.0f})."}
+            "rationale": f"One-time purchase around ${price:.0f}: bid per click, cap acquisition cost at {TARGET_CPA_SHARE:.0%} of order value (${target:.0f})."},
+            target, cpc, rows)
 
 
 def build_config(profile: AdvertiserProfile, pub_scores: list[PublisherScore], pubs: list[Publisher],

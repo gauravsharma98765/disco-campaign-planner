@@ -124,6 +124,7 @@ function renderProfile(p) {
     h('dt', {}, 'Economics'), h('dd', {}, `${p.price_tier} tier, ~${money(p.estimated_price_usd)} per order, ${p.business_model.replace(/_/g, ' ')}`),
     h('dt', {}, 'Audience'), h('dd', {}, `${p.target_gender}, ages ${p.target_age_min}-${p.target_age_max}`),
     h('dt', {}, 'Values & tone'), h('dd', {}, chips(p.values), h('div', { class: 'hint' }, p.tone)),
+    (p.restrictions || []).length ? [h('dt', {}, 'Must not claim'), h('dd', {}, chips(p.restrictions, 'bad'))] : null,
   );
   $('#profile').replaceChildren(dl);
 }
@@ -233,7 +234,10 @@ function renderConfig(cfg) {
     h('dt', {}, 'Frequency cap'), h('dd', {}, `${cfg.frequency_cap.impressions} impressions per ${cfg.frequency_cap.per}`));
 
   const bidBox = h('div', { class: 'box' }, h('h4', {}, 'Bid strategy'),
+    bid.feasibility === 'marginal' ? h('div', { class: 'warnbox' }, h('b', {}, 'Economics are marginal. '), bid.feasibility_note) : null,
+    bid.feasibility === 'infeasible' ? h('div', { class: 'warnbox bad' }, h('b', {}, 'Economics do not close. '), bid.feasibility_note) : null,
     h('div', {}, h('b', {}, `${bid.pricing_model} · ${(bid.strategy || '').replace(/_/g, ' ')}`)),
+    bid.max_affordable_cpc_usd != null ? h('div', {}, `Max affordable CPC at target: $${bid.max_affordable_cpc_usd}`) : null,
     bid.target_cpa_usd ? h('div', {}, `Target CPA: ${money(bid.target_cpa_usd)}`) : null,
     bid.starting_bid ? h('div', {}, `Starting bid: $${bid.starting_bid.low} – $${bid.starting_bid.high} ${bid.starting_bid.unit}`) : null,
     h('p', { class: 'hint' }, bid.rationale));

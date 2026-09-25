@@ -70,6 +70,7 @@ class AdvertiserProfile(BaseModel):
     target_age_min: int = Field(description="Youngest plausible buyer age. Always give a range; widen it when unsure.")
     target_age_max: int = Field(description="Oldest plausible buyer age.")
     values: list[str] = Field(description="Brand values / claims in the pitch, e.g. 'sustainability', 'vet-formulated', 'craftsmanship'.")
+    restrictions: list[str] = Field(description="Claims the advertiser explicitly ruled out, e.g. 'no discounts', 'no certifications', 'no performance studies'. Empty if nothing is ruled out.")
     tone: str = Field(description="Brand voice in 2-4 words, e.g. 'premium, understated'.")
     assumptions: list[str] = Field(description="Things you had to assume because the description did not say. Empty if clarity is high.")
     clarifying_questions: list[str] = Field(description="Questions that would most improve the plan. Empty if clarity is high.")

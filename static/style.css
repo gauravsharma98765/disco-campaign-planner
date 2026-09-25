@@ -93,6 +93,7 @@ pre { background: #0f1720; color: #e6edf3; padding: 14px; border-radius: 8px; ov
 .trace-step { display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
 .trace-step .ms { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; }
 .warnbox { background: var(--warn-soft); border: 1px solid #f1d9a6; border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 12px; }
+.warnbox.bad { background: var(--bad-soft); border-color: #f3b9b3; }
 
 @media (max-width: 760px) {
   .persona, .grid2 { grid-template-columns: 1fr; }

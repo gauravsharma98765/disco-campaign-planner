@@ -20,7 +20,7 @@ def profile(**overrides) -> AdvertiserProfile:
         primary_subcategory="pet_food", persona_affinities=["pet_food", "pet_health", "subscription_boxes"],
         price_tier="premium", estimated_price_usd=80, business_model="subscription", target_gender="balanced",
         target_age_min=30, target_age_max=60, values=["vet-formulated", "joint health"], tone="premium, warm",
-        assumptions=[], clarifying_questions=[],
+        restrictions=[], assumptions=[], clarifying_questions=[],
     )
     base.update(overrides)
     return AdvertiserProfile(**base)
@@ -110,6 +110,22 @@ def test_persona_with_tripped_disinterest_is_not_selected_on_merit():
     value = next(s for s in scores if s.name == "The Value-Conscious Shopper")
     assert any(f.name == "disinterest_conflict" and f.value > 0 for f in value.lexical_features)
     assert not value.selected
+
+
+def test_claim_checker_flags_invented_offers_and_endorsements():
+    from app.creatives import Creative, check
+    detergent = profile(product="refillable laundry detergent tablets", price_tier="mid", estimated_price_usd=20,
+                        summary="Unscented refillable laundry detergent tablets for apartment households.",
+                        values=["refillable", "unscented"], restrictions=["no discounts", "no certifications", "no performance studies"],
+                        catalog_categories=["home"], catalog_subcategories=["household"], primary_subcategory="household",
+                        persona_affinities=["household", "refillable_products"], business_model="one_time")
+    copy = [Creative(persona_id="persona_008", headline="Bundle now for extra savings", body="Trusted by parents, clinically proven clean.",
+                     cta="Shop now", angle="x", leaned_into=[], avoided=[])]
+    kinds = sorted(w["warning"].split(" ")[1] for w in check(copy, detergent))
+    assert kinds == ["endorsement", "offer", "proof"]
+    clean = [Creative(persona_id="persona_008", headline="Refillable tablets, no scent", body="Skip the plastic bottle. Works in any machine.",
+                      cta="Try it", angle="x", leaned_into=[], avoided=[])]
+    assert check(clean, detergent) == []
 
 
 # --- budget -----------------------------------------------------------------------

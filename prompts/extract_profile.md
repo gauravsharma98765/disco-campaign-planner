@@ -35,6 +35,7 @@ Persona affinity tags: {{persona_affinities}}
 - business_model: "subscription" if recurring; "gifting" if mostly bought as gifts; "b2b" if sold to businesses; "one_time" for normal retail; "unknown" if the text gives no hint.
 - target_gender / target_age_min / target_age_max: infer from the product and audience described. Use "balanced" when the product is not gendered. Always give an age range; when the text gives no signal use the broadest plausible range for that product (for most consumer goods 25-55) and record it under assumptions.
 - values: short tags for the claims and values in the pitch (e.g. "sustainability", "vet-formulated", "craftsmanship", "value-for-money", "convenience"). These are matched against publisher notes and persona preferences, so prefer common words over clever ones.
+- restrictions: anything the text says is unavailable or must not be claimed, e.g. "no discounts", "no certifications", "no performance studies". Quote them closely. The copywriter is forbidden from using them. Empty if nothing is ruled out.
 - assumptions: every inference you made that the text did not state. Keep each to one sentence.
 - clarifying_questions: the 1-3 questions whose answers would most change the plan. Empty when clarity is high.
 

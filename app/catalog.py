@@ -63,8 +63,11 @@ def examples() -> list[dict]:
     """The sample advertiser one-liners from the data pack, for the UI chips and the eval."""
     import re
     out = []
-    for line in (DATA_DIR / "example_advertisers.txt").read_text().splitlines():
-        m = re.match(r"^(\d+)\.\s+(.*)", line.strip())
-        if m:
-            out.append({"n": int(m.group(1)), "text": m.group(2)})
+    extra = DATA_DIR.parent / "eval" / "extra_examples.txt"      # regression cases we added ourselves
+    files = [DATA_DIR / "example_advertisers.txt"] + ([extra] if extra.exists() else [])
+    for path in files:
+        for line in path.read_text().splitlines():
+            m = re.match(r"^(\d+)\.\s+(.*)", line.strip())
+            if m:
+                out.append({"n": int(m.group(1)), "text": m.group(2)})
     return out

@@ -11,10 +11,20 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .catalog import personas
 from .llm import generate_json, load_prompt
-from .retrieval import phrase_conflicts, tokens
+from .retrieval import phrase_conflicts, profile_tokens, tokens
 from .schemas import AdvertiserProfile, PersonaScore, Publisher
 
 MAX_HEADLINE, MAX_BODY = 60, 160
+
+# Words that assert an offer, endorsement, proof or promise. Copy may use a family only if the
+# advertiser's own text uses one of its words; otherwise the copy is inventing it. (Stemmed forms,
+# because tokens() strips plurals: "savings" -> "saving".)
+CLAIM_FAMILIES = {
+    "offer": {"discount", "deal", "bundle", "off"},   # not "save"/"saving": "save time", "time-saving" are not offers
+    "endorsement": {"trusted", "recommended", "loved", "rated", "award", "winning"},
+    "proof": {"certified", "clinically", "proven", "study", "studie", "tested", "backed"},
+    "promise": {"guarantee", "ensure", "cure", "eliminate"},
+}
 
 
 class Creative(BaseModel):
@@ -51,12 +61,17 @@ def personas_text(selected: list[PersonaScore], placements: dict[str, list[Publi
     return "\n\n".join(blocks)
 
 
-def check(creatives: list[Creative]) -> list[dict]:
+def check(creatives: list[Creative], profile: AdvertiserProfile) -> list[dict]:
     """Deterministic QA. Returns a list of {persona_id, warning} rows; empty means clean."""
     by_id = {p.id: p for p in personas()}
+    supported, restricted = profile_tokens(profile), tokens(" ".join(profile.restrictions))
     warnings = []
     for c in creatives:
         copy_words = tokens(f"{c.headline} {c.body}")
+        for kind, family in CLAIM_FAMILIES.items():   # unsupported claim: family used, never stated by the advertiser
+            hits = copy_words & family
+            if hits and (family & restricted or not family & supported):
+                warnings.append({"persona_id": c.persona_id, "warning": f"unsupported {kind} claim: {', '.join(sorted(hits))}"})
         persona = by_id.get(c.persona_id)
         if persona:
             for phrase in phrase_conflicts(persona.disinterested_in, copy_words):
@@ -80,7 +95,19 @@ def generate_creatives(profile: AdvertiserProfile, selected: list[PersonaScore],
     prompt = load_prompt("generate_creatives",
                          profile=json.dumps(profile.model_dump(), indent=1),
                          personas=personas_text(selected, placements))
-    result = generate_json(prompt, CreativeSet, temperature=0.8)
     wanted = [s.persona_id for s in selected]
-    creatives = sorted((c for c in result.creatives if c.persona_id in wanted), key=lambda c: wanted.index(c.persona_id))
-    return creatives, check(creatives), prompt
+
+    def ask(text: str) -> list[Creative]:
+        result = generate_json(text, CreativeSet, temperature=0.8)
+        return sorted((c for c in result.creatives if c.persona_id in wanted), key=lambda c: wanted.index(c.persona_id))
+
+    creatives = ask(prompt)
+    warnings = check(creatives, profile)
+    invented = [w for w in warnings if w["warning"].startswith("unsupported")]
+    if invented:   # one rewrite pass: show the model exactly what it invented
+        prompt += ("\n\nYour previous attempt made claims the advertiser cannot support: "
+                   + "; ".join(f"{w['persona_id']} -> {w['warning']}" for w in invented)
+                   + ". Rewrite so no variant contains any offer, endorsement, proof or promise the profile does not state.")
+        creatives = ask(prompt)
+        warnings = check(creatives, profile)
+    return creatives, warnings, prompt
