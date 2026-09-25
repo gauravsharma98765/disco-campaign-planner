@@ -35,6 +35,7 @@ T = TypeVar("T", bound=BaseModel)
 
 _client: OpenAI | None = None
 _cache_data: dict[str, dict] | None = None
+_cache_mtime: float = 0.0
 
 
 def client() -> OpenAI:
@@ -64,9 +65,13 @@ def cache_enabled() -> bool:
 
 
 def _cache() -> dict[str, dict]:
-    global _cache_data
-    if _cache_data is None:
+    """In-memory copy of the cache file, re-read whenever another process (the eval script,
+    a second server) has written to it, so nobody overwrites anybody else's entries."""
+    global _cache_data, _cache_mtime
+    mtime = CACHE_PATH.stat().st_mtime if CACHE_PATH.exists() else 0.0
+    if _cache_data is None or mtime != _cache_mtime:
         _cache_data = json.loads(CACHE_PATH.read_text()) if CACHE_PATH.exists() else {}
+        _cache_mtime = mtime
     return _cache_data
 
 
@@ -130,6 +135,7 @@ def generate_json(prompt: str, schema: type[T], temperature: float = 0.3) -> T:
         _cache()[key] = {"model": getattr(response, "model", MODEL), "schema": schema.__name__,
                          "prompt_head": prompt[:100], "response": parsed.model_dump_json()}
         CACHE_PATH.write_text(json.dumps(_cache(), indent=1))
+        globals()["_cache_mtime"] = CACHE_PATH.stat().st_mtime
     return parsed
 
 

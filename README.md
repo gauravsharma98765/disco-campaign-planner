@@ -27,7 +27,7 @@ Five steps in `app/pipeline.py`. Three call an LLM (gpt-4.1-mini via Eden AI, pr
 
 **5. Campaign config (code).** Budget split by fit score, capped by each publisher's reach. Bid strategy by business model: target CPA for subscriptions, CPM for luxury, CPC otherwise, plus a feasibility check that compares what a click costs with what a click can be worth and says when the economics do not close. Every constant I made up is listed under `assumptions`.
 
-**How I checked it.** I hand-labelled the 11 clear samples. Precision@3 is 0.82 with the reranker and 0.67 with fusion alone, so the LLM stage earns its place. The B2B, nonsense and "no discounts" inputs land where expected. Responses are cached by prompt hash, so the sample chips are instant and repeatable.
+**How I checked it.** I hand-labelled the 11 clear samples. Precision@3 is about 0.8 with the reranker (0.79 to 0.82 across runs, since extraction at low temperature is not perfectly deterministic) and 0.67 with fusion alone, so the LLM stage earns its place. The B2B, nonsense and "no discounts" inputs land where expected. Responses are cached by prompt hash, so the sample chips are instant and repeatable.
 
 ## What I would do with another week
 
