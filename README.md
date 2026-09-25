@@ -2,15 +2,7 @@
 
 You type a sentence or two about what you sell. The app tells you which publishers to advertise on and why, which ones it dropped and why, writes one ad per shopper persona that fits, and returns a campaign config with budget split, bids and targeting. Every ranking shows the numbers behind it.
 
-**Live demo:** _Railway URL here_. **Run it locally** (Python 3.12):
-
-```bash
-cp .env.example .env                        # add EDEN_API_KEY
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/uvicorn app.main:app --reload     # http://localhost:8000  (?example=1 auto-runs a sample)
-.venv/bin/python -m pytest -q               # 11 unit tests, no LLM
-.venv/bin/python -m eval.run_examples && .venv/bin/python -m eval.metrics   # 15 samples, precision@3
-```
+**Live demo:** https://disco-campaign-planner-production.up.railway.app/ (add `?example=1` to auto-run a sample)
 
 ## What I built
 
