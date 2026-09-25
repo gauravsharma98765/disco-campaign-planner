@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campaign Planner</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Campaign Planner</h1>
+      <p class="sub">Describe the business. Get ranked publishers, persona-tuned creative, and a campaign config, with the reasoning shown.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="card input">
+      <label for="description">Advertiser description</label>
+      <textarea id="description" rows="3" placeholder="We sell premium dog food for senior dogs, targeting owners who care about joint health..."></textarea>
+      <div class="chips" id="examples" aria-label="Sample advertisers"></div>
+      <div class="row controls">
+        <label class="inline">Budget (USD)
+          <input id="budget" type="number" min="500" step="500" placeholder="10000">
+        </label>
+        <button id="run" class="primary">Plan campaign</button>
+        <span id="status" class="status"></span>
+      </div>
+    </section>
+
+    <div id="results" hidden>
+      <div id="banner"></div>
+
+      <section class="card" id="profile-card">
+        <h2>1. What we understood <span class="hint">extracted by the LLM, then normalised against the catalog vocabulary</span></h2>
+        <div id="profile"></div>
+      </section>
+
+      <section class="card" id="publishers-card">
+        <h2>2. Where to run <span class="hint">hard filters, lexical + semantic rankers, RRF fusion, LLM rerank</span></h2>
+        <p id="placement-note" class="note"></p>
+        <div id="recommended"></div>
+        <details id="considered-wrap"><summary>Considered but not recommended <span id="considered-count"></span></summary><div id="considered"></div></details>
+        <details id="excluded-wrap"><summary>Excluded by a hard rule <span id="excluded-count"></span></summary><div id="excluded"></div></details>
+      </section>
+
+      <section class="card" id="personas-card">
+        <h2>3. Who to speak to, and what to say <span class="hint">one creative per selected persona</span></h2>
+        <div id="warnings"></div>
+        <div id="personas"></div>
+        <details><summary>Personas not selected</summary><div id="unselected"></div></details>
+      </section>
+
+      <section class="card" id="config-card">
+        <h2>4. Campaign config <span class="hint">what a downstream system would run</span></h2>
+        <div id="config"></div>
+        <details><summary>Raw JSON <button id="copy" class="small">Copy</button></summary><pre id="config-json"></pre></details>
+      </section>
+
+      <section class="card" id="trace-card">
+        <h2>Trace <span class="hint">stage timings and the exact prompts sent</span></h2>
+        <div id="trace"></div>
+      </section>
+    </div>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

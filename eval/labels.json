@@ -1,0 +1,16 @@
+{
+  "_readme": "Hand labels for the clear-cut sample advertisers. 'publishers' = the set a media planner would put in the top 3; 'status' = expected pipeline status. Vague inputs (#5, #8) are deliberately unlabelled.",
+  "1":  {"publishers": ["Pawline", "Ruffco", "Tailcrate"]},
+  "2":  {"publishers": ["Movewell", "Cloudfoot", "Stride & Stem"]},
+  "3":  {"publishers": ["Pop & Sip", "Daily Form", "Pantrygood"]},
+  "4":  {"publishers": ["Hearthstone Goods", "Northbed", "Heartfoot"]},
+  "6":  {"publishers": ["Cloudfoot", "Movewell", "Stride & Stem"]},
+  "7":  {"status": "no_fit"},
+  "9":  {"publishers": ["Pantrygood", "Swiftcart", "Hearthstone Goods"]},
+  "10": {"publishers": ["Linden Park", "Marlowe & Co.", "Stride & Stem"]},
+  "11": {"publishers": ["Pantrygood", "Movewell", "Swiftcart", "Pop & Sip"]},
+  "12": {"publishers": ["Tailcrate", "Pawline", "Ruffco"]},
+  "13": {"publishers": ["Movewell", "Daily Form", "Studiogrid"]},
+  "14": {"publishers": ["Northbed", "Hearthstone Goods", "Marlowe & Co."]},
+  "15": {"status": "needs_input"}
+}
