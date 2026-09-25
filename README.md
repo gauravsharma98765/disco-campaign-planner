@@ -2,7 +2,7 @@
 
 You type a sentence or two about what you sell. The app tells you which publishers to advertise on and why, which ones it dropped and why, writes one ad per shopper persona that fits, and returns a campaign config with budget split, bids and targeting. Every ranking shows the numbers behind it.
 
-**Live demo:** https://disco-campaign-planner-production.up.railway.app/ (add `?example=1` to auto-run a sample)
+**Live demo:** https://disco-campaign-planner-production.up.railway.app/ 
 
 ## What I built
 
