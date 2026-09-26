@@ -85,3 +85,21 @@ def run_plan(description: str, budget_usd: Optional[float] = None, deterministic
         "thresholds": {"recommend_floor": RECOMMEND_FLOOR},
         "trace": trace,
     }
+
+
+if __name__ == "__main__":   # .venv/bin/python -m app.pipeline "your advertiser sentence here"
+    import json
+    import sys
+    text = " ".join(sys.argv[1:]) or "We sell premium dog food for senior dogs."
+    result = run_plan(text)
+    print("status:", result["status"])
+    print(json.dumps(result["profile"], indent=1))
+    for s in result.get("publishers", []):
+        if s["status"] == "recommended":
+            print(f"\n{s['name']}  fit {s['fit_score']}\n  {s['rationale']}")
+    for c in result.get("creatives", []):
+        print(f"\n[{c['persona_id']}] {c['headline']}\n  {c['body']}  ({c['cta']})")
+    if result.get("config"):
+        bid = result["config"]["bid_strategy"] or {}
+        print("\nbid:", bid.get("pricing_model"), bid.get("feasibility"), "| budget split:",
+              {r["name"]: f"{r['allocation_pct']}%" for r in result["config"]["publishers"]})
