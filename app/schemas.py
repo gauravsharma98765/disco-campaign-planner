@@ -1,17 +1,12 @@
 """
-All data shapes in one place.
-
-Three groups:
-  1. Catalog models   - typed views of data/publishers.json and data/shopper_personas.json
-  2. AdvertiserProfile - what the LLM extracts from the advertiser's one-liner (step 1)
-  3. Scoring models   - what the ranking pipeline produces, with every number it used
+Pydantic models: the catalog records, the profile the LLM extracts, and the score objects the
+ranker fills in.
 """
 from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
-# --- 1. Catalog -------------------------------------------------------------
-
+# catalog records
 class Audience(BaseModel):
     age_skew: str                      # e.g. "25-44" or "nationwide" for geos
     gender_split: dict[str, float]     # {"female": 0.62, "male": 0.37, "other": 0.01}
@@ -43,8 +38,7 @@ class Persona(BaseModel):
     typical_aov_usd: float
 
 
-# --- 2. Advertiser profile (LLM output, step 1) -----------------------------
-
+# what the LLM extracts
 Clarity = Literal["high", "medium", "low", "none"]
 PriceTier = Literal["budget", "mid", "premium", "luxury"]
 BusinessModel = Literal["one_time", "subscription", "gifting", "b2b", "unknown"]
@@ -76,8 +70,7 @@ class AdvertiserProfile(BaseModel):
     clarifying_questions: list[str] = Field(description="Questions that would most improve the plan. Empty if clarity is high.")
 
 
-# --- 3. Scoring outputs -----------------------------------------------------
-
+# what the ranker produces
 class Feature(BaseModel):
     """One term of the lexical score: value in [0,1], weight, and their product."""
     name: str

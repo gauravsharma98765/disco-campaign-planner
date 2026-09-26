@@ -1,9 +1,7 @@
 """
-Step 4: one creative per selected persona, in a single LLM call.
-
-One call (not one per persona) is cheaper and faster, and lets the model
-see all variants at once, which is how it keeps them distinct. A deterministic check
-afterwards flags copy that trips a persona's disinterests or breaks length limits.
+One creative per selected persona, all from a single LLM call, then a code check for claims the
+advertiser never made, phrases the persona dislikes, and copy that is too long or too similar to
+another variant. If the model invented a claim it gets one rewrite.
 """
 import json
 

@@ -1,9 +1,6 @@
 """
-Step 5: turn the ranked publishers, personas and creatives into a campaign config.
-
-Everything here is arithmetic on labelled assumptions (the constants below). There is no
-real CPM data in the mock pack, so the numbers are a defensible starting point for a
-human to edit, and every assumption is echoed into config["assumptions"].
+Budget split, bid strategy, targeting. Plain arithmetic on constants I had to make up,
+since there are no rate cards in the data, so every constant is echoed into the config's assumptions.
 """
 from datetime import date, timedelta
 

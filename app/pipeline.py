@@ -1,14 +1,7 @@
 """
-Orchestrates the whole plan. Read this file top to bottom to understand the system.
-
-    1. extract    advertiser text -> AdvertiserProfile            (LLM)
-    2. retrieve   hard filters, lexical + semantic rankers, RRF    (code)
-    3. rerank     LLM re-scores the shortlist and writes reasons   (LLM)
-    4. create     one creative per selected persona                (LLM)
-    5. configure  budget split, bids, targeting                    (code)
-
-deterministic_only=True skips the two LLM stages after extraction, which is handy for
-evals of the ranker and for showing the fusion order next to the reranked order.
+The whole flow, top to bottom. Extraction, reranking and creatives call the LLM; retrieval and
+the config are plain code. deterministic_only skips the LLM stages after extraction, which the
+eval uses to score the fusion order on its own.
 """
 import time
 from typing import Optional

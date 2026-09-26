@@ -1,10 +1,7 @@
 """
-Step 3: LLM reranks the fused shortlist and writes the rationale for each publisher.
-
-Why an LLM here at all? The two rankers see tags and embeddings; neither can reason that
-"grocery shoppers are not in a pet-buying mindset at checkout". The reranker is bounded to
-the shortlist so it can only reorder good candidates, never resurrect an excluded one.
-Set USE_RERANKER=0 to fall back to the deterministic fusion order (useful for demos and evals).
+LLM pass over the top of the fused list: a fit score and a one-line reason per publisher. It only
+sees the shortlist, so it can reorder but can't bring back anything a filter removed.
+USE_RERANKER=0 falls back to the fusion order.
 """
 import json
 import os

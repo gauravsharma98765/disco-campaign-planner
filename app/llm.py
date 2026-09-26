@@ -1,12 +1,8 @@
 """
-Thin wrapper around the LLM provider. Three jobs only:
-  - generate_json(prompt, Schema) -> validated Pydantic object
-  - embed(texts) -> list of vectors
-  - a disk cache keyed by prompt hash, so identical prompts never re-spend money
-
-We talk to Eden AI's OpenAI-compatible API through the openai SDK, so swapping providers
-is a base_url + model-name change. Prompts live as Markdown files in prompts/ and are
-filled with {{variables}} here, so the prompts/ directory is the real source of truth.
+The only file that talks to the model. generate_json asks for JSON matching a Pydantic schema,
+embed returns vectors, and both go through a disk cache keyed by prompt hash. Eden AI is
+OpenAI-compatible, so switching provider is a base_url and a model name. Prompts are markdown
+files in prompts/ with {{placeholders}}.
 """
 import hashlib
 import json
@@ -58,8 +54,7 @@ def load_prompt(name: str, **variables: str) -> str:
     return text
 
 
-# ---- cache -----------------------------------------------------------------
-
+# cache
 def cache_enabled() -> bool:
     return os.environ.get("LLM_CACHE", "1") != "0"
 
@@ -81,8 +76,7 @@ def _cache_key(prompt: str, schema: type[BaseModel], temperature: float) -> str:
     return hashlib.sha256(f"{schema.__name__}|{temperature}|{prompt}".encode()).hexdigest()[:24]
 
 
-# ---- calls -----------------------------------------------------------------
-
+# calls
 def _with_retries(fn, attempts: int = 3):
     """Retry on rate limits / overload with a short backoff."""
     for i in range(attempts):

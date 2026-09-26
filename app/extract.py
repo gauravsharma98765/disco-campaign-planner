@@ -1,9 +1,6 @@
 """
-Step 1: advertiser one-liner -> AdvertiserProfile.
-
-One LLM call constrained to a Pydantic JSON schema. After the call we normalise the
-controlled-vocabulary fields against the real catalog, so a hallucinated tag can
-never reach the scorer.
+Advertiser sentence -> AdvertiserProfile, one LLM call with a JSON schema. The tags the model
+returns are checked against the real catalog afterwards so nothing invented reaches the scorer.
 """
 from .catalog import vocabulary
 from .llm import generate_json, load_prompt

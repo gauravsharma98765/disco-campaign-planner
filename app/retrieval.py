@@ -1,12 +1,7 @@
 """
-Step 2: rank publishers and personas against the AdvertiserProfile. No LLM here.
-
-    hard filters -> drop publishers that cannot work, recording the rule that fired
-    ranker A     -> lexical/structured features, weighted sum (weights below)
-    ranker B     -> cosine similarity between text embeddings
-    fusion       -> Reciprocal Rank Fusion (RRF) of the two rankings
-
-Every number is kept on the score objects so the UI can show the work.
+Publisher and persona ranking, no LLM. Hard filters first, then two rankers (weighted features,
+embedding cosine) merged with reciprocal rank fusion. Every intermediate number is kept on the
+score objects so the UI can show them.
 """
 import re
 from typing import Optional
@@ -16,8 +11,7 @@ import numpy as np
 from .embeddings import cosine
 from .schemas import AdvertiserProfile, Feature, Persona, PersonaScore, Publisher, PublisherScore
 
-# ---- knobs (the things you would tune with real conversion data) -----------
-
+# weights, thresholds and lookup tables
 PUBLISHER_WEIGHTS = {
     "category_match": 0.30,        # publisher's main category is one the advertiser fits
     "primary_subcategory_match": 0.15,  # publisher sells the product type itself (pet_food, activewear, bedding)
@@ -58,8 +52,7 @@ focused focus based made make makes want wants get got actually really basically
 """.split())
 
 
-# ---- small helpers ----------------------------------------------------------
-
+# helpers
 def tokens(text: str) -> set[str]:
     """Lowercase word set minus stopwords and short tokens, with a crude plural strip so
     'subscriptions' meets 'subscription'. 'pet_food' -> {'pet', 'food'}."""
@@ -110,8 +103,7 @@ def weighted(features: dict[str, tuple[float, str]], weights: dict[str, float]) 
     return round(sum(r.contribution for r in rows), 4), rows
 
 
-# ---- publishers -------------------------------------------------------------
-
+# publishers
 def hard_filter(profile: AdvertiserProfile, pub: Publisher) -> Optional[str]:
     """Return the reason to exclude this publisher, or None if it may compete."""
     if not profile.is_consumer_commerce:
@@ -195,8 +187,7 @@ def score_publishers(profile: AdvertiserProfile, pubs: list[Publisher],
     return sorted(scores, key=lambda s: (s.status == "excluded", s.fused_rank or 999))
 
 
-# ---- personas ---------------------------------------------------------------
-
+# personas
 GENDER_FIT = {  # (persona.gender_skew, profile.target_gender) -> fit
     ("female", "female"): 1.0, ("female", "male"): 0.1, ("female", "balanced"): 0.6, ("female", "unknown"): 0.7,
     ("female-leaning", "female"): 0.9, ("female-leaning", "male"): 0.3, ("female-leaning", "balanced"): 0.8, ("female-leaning", "unknown"): 0.8,
@@ -279,8 +270,7 @@ def explain_persona(s: PersonaScore) -> str:
     return "; ".join(parts) or "weak fit on every feature"
 
 
-# ---- fusion -----------------------------------------------------------------
-
+# fusion
 def rank_positions(scores: dict[str, float]) -> dict[str, int]:
     """1-based rank, highest score first."""
     ordered = sorted(scores, key=lambda i: scores[i], reverse=True)

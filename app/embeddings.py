@@ -1,10 +1,6 @@
 """
-Semantic side of matching.
-
-Catalog embeddings (20 publishers + 10 personas) are computed once and cached to
-data/embeddings_cache.json, which is committed, so a fresh deploy never has to
-re-embed and results are reproducible. Only the advertiser profile is embedded
-per request. The cache invalidates itself if a catalog text or the model changes.
+Embeddings for the semantic ranker. The catalog is embedded once and cached on disk (the cache
+is committed, so deploys don't re-embed); only the advertiser profile is embedded per request.
 """
 import json
 from functools import lru_cache

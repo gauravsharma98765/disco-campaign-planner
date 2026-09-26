@@ -1,7 +1,6 @@
 """
-Loads the mock data pack and turns each publisher / persona into a short
-natural-language "document". Those documents are what we embed (semantic ranker)
-and tokenize (lexical ranker), so both rankers see the same evidence.
+Loads the data pack. Also turns each publisher and persona into a short paragraph, which is
+what gets embedded and tokenised, so both rankers see the same text.
 """
 import json
 from functools import lru_cache
