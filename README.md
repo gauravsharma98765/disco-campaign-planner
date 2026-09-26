@@ -15,7 +15,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 ## What I built
 
-Five steps in `app/pipeline.py`. Three call an LLM (gpt-4.1-mini via Eden AI, prompts in `prompts/`), two are plain Python.
+Five steps in `app/pipeline.py`. Three call an LLM (gpt-4.1-mini via Eden AI, prompts in `prompts/`), two are plain Python. Diagram and file map in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **1. Extraction (LLM).** The sentence goes to the model with a JSON schema and the catalog's own tag vocabulary. Back comes a structured profile: category, the tag naming the product type, price tier, order value, audience, values, anything the advertiser said must not be claimed, plus clarity, assumptions and open questions. Tags not in the catalog are dropped in code. Messy input is handled here: nonsense stops and asks, a vague pitch runs with its assumptions listed, B2B ends in an explained no-fit.
 
